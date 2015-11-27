@@ -1,0 +1,26 @@
+{
+  "name": "neg-nair",
+  "version": "1.0.0",
+  "description": "newegg nair client sdk for nodejs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JamesYYang/neg-nair.git"
+  },
+  "keywords": [
+    "newegg"
+  ],
+  "author": "James.Y.Yang",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/JamesYYang/neg-nair/issues"
+  },
+  "homepage": "https://github.com/JamesYYang/neg-nair#readme",
+  "dependencies": {
+    "neg-util": "0.0.1",
+    "request": "^2.67.0"
+  }
+}
