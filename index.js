@@ -29,9 +29,9 @@ exports.init = (options, callback) => {
       callback(err);
     }else{
       nairDBHash = negUtil.getHash(db);
-      nairDBInfo = JSON.parse(db);
+      nairDBInfo = buildNairDBInfo(JSON.parse(db));
       if(debug_mode){
-        console.log(`get nairl db: ${nairDBInfo.length}`);
+        console.log(`get nairl db: ${nairDBInfo.size}`);
       }
       callback(null);
     }
@@ -66,19 +66,32 @@ var getNairDBInfoInterval = (uri) => {
 
   request(reqOption, (err, res, body) => {
     if(!err && res.statusCode === 200){
-      if(debug_mode) {
-       console.log(`refresh nair db info`);
-      }
       var newHash = negUtil.getHash(body);
       if(newHash !== nairDBHash){
         try{
-          nairDBInfo = JSON.parse(body);
+          nairDBInfo = buildNairDBInfo(JSON.parse(body));
           nairDBHash = newHash;
+
+          if(debug_mode){
+            console.log(`refresh nairl db: ${nairDBInfo.size}`);
+          }
         }catch(err){}
       }
     }
 
   })
+};
+
+var buildNairDBInfo = (dbs) => {
+  if(!dbs && dbs.length === 0){
+    return;
+  }
+  var newMap = new Map();
+  for(let db of dbs){
+    newMap.set(db.DatabaseName, db);
+  }
+  return newMap;
+
 };
 
 var insuranceDatabase = (dbName, password) => {
@@ -98,15 +111,10 @@ var insuranceDatabase = (dbName, password) => {
 };
 
 var findDB = (dbName) => {
-  if(!nairDBInfo || nairDBInfo.length === 0){
+  if(!nairDBInfo || nairDBInfo.size === 0){
     throw new Error("Please init nair db info first");
   }
-
-  for(let db of nairDBInfo){
-    if(db.DatabaseName === dbName){
-      return db;
-    }
-  }
+  return nairDBInfo.get(dbName);
 };
 
 var makeNairKey = (dbId, key) => {
