@@ -7,6 +7,7 @@ var nairDBInfo;
 var nairDBHash;
 var debug_mode;
 var location;
+var needMatchDB;
 const DEFAULTEXPIRED = 60 * 60 * 24;
 
 exports.init = (options, callback) => {
@@ -14,28 +15,35 @@ exports.init = (options, callback) => {
   if(!options.hosts){
     throw new Error('Please provider nair host!');
   }
-  if(!options.nairDBUri){
-    throw new Error('Please provider uri for get nair db info!');
-  }
+
   debug_mode = options.debug_mode;
   location = options.location || "WH7";
+  needMatchDB = options.nairDBUri ? true : false;
 
   pool.init(options.hosts, options);
 
-  setInterval(getNairDBInfoInterval, 5 * 60 * 1000, options.nairDBUri);
+  if(needMatchDB){
+    setInterval(getNairDBInfoInterval, 5 * 60 * 1000, options.nairDBUri);
 
-  getNairDBInfo(options.nairDBUri, (err, db) => {
-    if(err){
-      callback(err);
-    }else{
-      nairDBHash = negUtil.getHash(db);
-      nairDBInfo = buildNairDBInfo(JSON.parse(db));
-      if(debug_mode){
-        console.log(`get nairl db: ${nairDBInfo.size}`);
+    getNairDBInfo(options.nairDBUri, (err, db) => {
+      if(err){
+        callback(err);
+      }else{
+        nairDBHash = negUtil.getHash(db);
+        nairDBInfo = buildNairDBInfo(JSON.parse(db));
+        if(debug_mode){
+          console.log(`get nairl db: ${nairDBInfo.size}`);
+        }
+        callback(null);
       }
-      callback(null);
+    });
+  }else{
+    if(debug_mode){
+      console.log('access nair with direct mode');
     }
-  });
+    callback(null);
+  }
+
 };
 
 var getNairDBInfo = (uri, callback) => {
@@ -47,7 +55,7 @@ var getNairDBInfo = (uri, callback) => {
   };
 
   request(reqOption, (err, res, body) => {
-    if (err && res.statusCode >= 400){
+    if (err || res.statusCode >= 400){
       callback(new Error('Get nair db info failed.'), null);
     }else{
       callback(null, body);
@@ -95,19 +103,28 @@ var buildNairDBInfo = (dbs) => {
 };
 
 var insuranceDatabase = (dbName, password) => {
-  var db = findDB(dbName);
-  if(!db){
-    throw new Error(`Invalid nair db: ${dbName}`);
+  if(!needMatchDB){
+    if(negUtil.is("Number", dbName) && dbName >= 0){
+      return {
+        TairDbId: dbName
+      };
+    }else{
+      throw new Error("Invalid database Id.");
+    }
   }else{
-    if(db.Password && db.Password !== password){
-      throw new Error("Invalid password.");
+    var db = findDB(dbName);
+    if(!db){
+      throw new Error(`Invalid nair db: ${dbName}`);
+    }else{
+      if(db.Password && db.Password !== password){
+        throw new Error("Invalid password.");
+      }
+      if(db.DatabaseLocation.toUpperCase() !== location){
+        throw new Error("Invalid database location.");
+      }
     }
-    if(db.DatabaseLocation.toUpperCase() !== location){
-      throw new Error("Invalid database location.");
-    }
+    return db;
   }
-
-  return db;
 };
 
 var findDB = (dbName) => {
@@ -118,7 +135,7 @@ var findDB = (dbName) => {
 };
 
 var makeNairKey = (dbId, key) => {
-  return `${dbId}_${key}`;
+  return needMatchDB ? `${dbId}_${key}` : key;
 };
 
 
