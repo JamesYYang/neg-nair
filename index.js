@@ -3,6 +3,7 @@
 var request = require('request');
 var negUtil = require('neg-util');
 var pool = require('./lib/connectionPool');
+var logger = require('./lib/logger');
 var nairDBInfo;
 var nairDBHash;
 var debug_mode;
@@ -20,6 +21,10 @@ exports.init = (options, callback) => {
   location = options.location || "WH7";
   needMatchDB = options.nairDBUri ? true : false;
 
+  if(options.log){
+    logger.setLogger(options.log);
+  }
+
   pool.init(options.hosts, options);
 
   if(needMatchDB){
@@ -32,14 +37,14 @@ exports.init = (options, callback) => {
         nairDBHash = negUtil.getHash(db);
         nairDBInfo = buildNairDBInfo(JSON.parse(db));
         if(debug_mode){
-          console.log(`get nairl db: ${nairDBInfo.size}`);
+          logger.log(`get nairl db: ${nairDBInfo.size}`);
         }
         callback(null);
       }
     });
   }else{
     if(debug_mode){
-      console.log('access nair with direct mode');
+      logger.log('access nair with direct mode');
     }
     callback(null);
   }
@@ -81,7 +86,7 @@ var getNairDBInfoInterval = (uri) => {
           nairDBHash = newHash;
 
           if(debug_mode){
-            console.log(`refresh nairl db: ${nairDBInfo.size}`);
+            logger.log(`refresh nairl db: ${nairDBInfo.size}`);
           }
         }catch(err){}
       }
