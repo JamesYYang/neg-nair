@@ -10,6 +10,7 @@ var debug_mode;
 var location;
 var needMatchDB;
 const DEFAULTEXPIRED = 60 * 60 * 24;
+const BELOWZERO = 4294967295;
 
 exports.init = (options, callback) => {
   options = options || {};
@@ -143,6 +144,12 @@ var makeNairKey = (dbId, key) => {
   return needMatchDB ? `${dbId}_${key}` : key;
 };
 
+var insuranceExpired = (expired) => {
+  expired = expired || DEFAULTEXPIRED;
+  expired = expired < 0 ? BELOWZERO : expired;
+  return expired;
+};
+
 
 exports.get = (dbName, key, password) => {
   return new Promise((resolve, reject) => {
@@ -169,7 +176,7 @@ exports.set = (dbName, key, value, password, expired) => {
   return new Promise((resolve, reject) => {
     try{
       var db = insuranceDatabase(dbName, password);
-      expired = expired || DEFAULTEXPIRED;
+      expired = insuranceExpired(expired);
       var client = pool.getConnection();
       client.set(db.TairDbId, makeNairKey(db.DatabaseId, key), value, expired, (err, result) => {
         if(err){
@@ -178,6 +185,28 @@ exports.set = (dbName, key, value, password, expired) => {
           reject(new Error('Set value failed.'));
         }else{
           resolve(null);
+        }
+      });
+
+    }catch(error){
+      reject(error);
+    }
+  });
+};
+
+exports.incr = (dbName, key, value, defaultValue, password, expired) => {
+  return new Promise((resolve, reject) => {
+    try{
+      var db = insuranceDatabase(dbName, password);
+      expired = insuranceExpired(expired);
+      var client = pool.getConnection();
+      client.incr(db.TairDbId, makeNairKey(db.DatabaseId, key), value, defaultValue, expired, (err, result) => {
+        if(err){
+          reject(err);
+        }else if(!result.success){
+          reject(new Error('Increase value failed.'));
+        }else{
+          resolve(result.value);
         }
       });
 
