@@ -145,7 +145,7 @@ var makeNairKey = (dbId, key) => {
 };
 
 var insuranceExpired = (expired) => {
-  expired = expired || DEFAULTEXPIRED;
+  expired = expired != null ? expired : DEFAULTEXPIRED;
   expired = expired < 0 ? BELOWZERO : expired;
   return expired;
 };
