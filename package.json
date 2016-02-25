@@ -1,6 +1,6 @@
 {
   "name": "neg-nair",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "newegg nair client sdk for nodejs",
   "main": "index.js",
   "scripts": {
