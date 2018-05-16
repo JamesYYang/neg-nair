@@ -78,3 +78,5 @@ $RECYCLE.BIN/
 .idea/
 
 test-nair.js
+
+.vscode

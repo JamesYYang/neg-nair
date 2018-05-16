@@ -172,6 +172,27 @@ exports.get = (dbName, key, password) => {
   });
 };
 
+exports.getMeta = (dbName, key, password) => {
+  return new Promise((resolve, reject) => {
+    try{
+      var db = insuranceDatabase(dbName, password);
+      var client = pool.getConnection();
+      client.getMeta(db.TairDbId, makeNairKey(db.DatabaseId, key), (err, result) => {
+        if(err){
+          reject(err);
+        }else if(!result.success){
+          resolve(null);
+        }else{
+          resolve(result.value);
+        }
+      });
+
+    }catch(error){
+      reject(error);
+    }
+  });
+};
+
 exports.set = (dbName, key, value, password, expired) => {
   return new Promise((resolve, reject) => {
     try{
