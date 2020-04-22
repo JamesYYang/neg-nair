@@ -1,14 +1,12 @@
-'use strict';
-
-var request = require('request');
-var negUtil = require('neg-util');
-var pool = require('./lib/connectionPool');
-var logger = require('./lib/logger');
-var nairDBInfo;
-var nairDBHash;
-var debug_mode;
-var location;
-var needMatchDB;
+const request = require('request');
+const negUtil = require('neg-util');
+const pool = require('./lib/connectionPool');
+const logger = require('./lib/logger');
+let nairDBInfo;
+let nairDBHash;
+let debug_mode;
+let location;
+let needMatchDB;
 const DEFAULTEXPIRED = 60 * 60 * 24;
 const BELOWZERO = 4294967295;
 
